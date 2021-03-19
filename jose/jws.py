@@ -1,7 +1,7 @@
-
 import binascii
 import json
 import six
+from loguru import logger
 
 try:
     from collections.abc import Mapping, Iterable  # Python 3
@@ -215,18 +215,24 @@ def _load(jwt):
 
 def _sig_matches_keys(keys, signing_input, signature, alg):
     for key in keys:
+        logger.info(f'1. key: {key}')
+        logger.info(f'2. signing_input: {signing_input}')
+        logger.info(f'3. signature: {signing_input}')
         if not isinstance(key, Key):
             key = jwk.construct(key, alg)
+            logger.info(f'4. constructed key: {key}')
         try:
+            logger.info(f'5. Verify...{(signing_input, signature)}')
             if key.verify(signing_input, signature):
+                logger.info(f'6. Verification OK')
                 return True
-        except Exception:
+        except Exception as e:
+            logger.info(f'7. Verification NOT ok. Error: {e}')
             pass
     return False
 
 
 def _get_keys(key):
-
     if isinstance(key, Key):
         return (key,)
 
@@ -260,7 +266,6 @@ def _get_keys(key):
 
 
 def _verify_signature(signing_input, header, signature, key='', algorithms=None):
-
     alg = header.get('alg')
     if not alg:
         raise JWSError('No algorithm was specified in the JWS header.')
