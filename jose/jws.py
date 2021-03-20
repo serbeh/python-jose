@@ -214,6 +214,7 @@ def _load(jwt):
 
 
 def _sig_matches_keys(keys, signing_input, signature, alg):
+    logger.info(f'0. Keys: {keys}')
     for key in keys:
         logger.info(f'1. key: {key}')
         logger.info(f'2. signing_input: {signing_input}')
@@ -233,7 +234,9 @@ def _sig_matches_keys(keys, signing_input, signature, alg):
 
 
 def _get_keys(key):
+    logger.info(f'type of key: {key}')
     if isinstance(key, Key):
+
         return (key,)
 
     try:
@@ -242,6 +245,7 @@ def _get_keys(key):
         pass
 
     if isinstance(key, Mapping):
+        logger.info(f'Key is Mapping: {key}')
         if 'keys' in key:
             # JWK Set per RFC 7517
             return key['keys']
@@ -258,10 +262,12 @@ def _get_keys(key):
     # Iterable but not text or mapping => list- or tuple-like
     elif (isinstance(key, Iterable) and
           not (isinstance(key, six.string_types) or isinstance(key, six.binary_type))):
+        logger.info(f'Key is Iterable: {key}')
         return key
 
     # Scalar value, wrap in tuple.
     else:
+        logger.info(f'Key is scalar value: {key}')
         return (key,)
 
 
@@ -272,8 +278,9 @@ def _verify_signature(signing_input, header, signature, key='', algorithms=None)
 
     if algorithms is not None and alg not in algorithms:
         raise JWSError('The specified alg value is not allowed')
-
+    logger.info(f'00. key: {key}')
     keys = _get_keys(key)
+    logger.info(f'01. keys: {keys}')
     try:
         if not _sig_matches_keys(keys, signing_input, signature, alg):
             raise JWSSignatureError()
